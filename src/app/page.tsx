@@ -19,7 +19,11 @@ const Home = () => {
 
   const worker = useMemo(async () => {
     return await createWorker("chi_sim", 1, {
-      workerPath: "./node_modules/tesseract.js/src/worker-script/node/index.js",
+      // 本地安装
+      //  https://github.com/naptha/tesseract.js/blob/master/docs/local-installation.md
+      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js',
+      langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0',
       logger: (m) => {
         console.log(m);
         setProgress(m.progress);

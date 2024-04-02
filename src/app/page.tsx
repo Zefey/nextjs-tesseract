@@ -21,9 +21,10 @@ const Home = () => {
     return await createWorker("chi_sim", 1, {
       // 本地安装
       //  https://github.com/naptha/tesseract.js/blob/master/docs/local-installation.md
-      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js',
-      langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0',
+      workerPath:
+        "https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js",
+      langPath: "https://tessdata.projectnaptha.com/4.0.0",
+      corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0",
       logger: (m) => {
         console.log(m);
         setProgress(m.progress);
@@ -43,12 +44,13 @@ const Home = () => {
     }
   };
 
-  const handleImage = (info: any) => {
+  const handleImage = (file: File) => {
     const reader = new FileReader();
     reader.addEventListener("load", () => {
       setSourceImg(reader.result as string);
     });
-    reader.readAsDataURL(info.file.originFileObj);
+    reader.readAsDataURL(file);
+    return false;
   };
 
   const handleCopy = () => {
@@ -64,7 +66,7 @@ const Home = () => {
   return (
     <div className={styles.container}>
       <div className={styles.btnGroup}>
-        <Upload showUploadList={false} onChange={handleImage} maxCount={1}>
+        <Upload beforeUpload={handleImage} showUploadList={false} maxCount={1}>
           <Button icon={<UploadOutlined />}>Select Image</Button>
         </Upload>
         <Button

@@ -53,7 +53,7 @@ const Home = () => {
   };
 
   const percent = useMemo(() => {
-    return Number(progress * 100).toFixed(2);
+    return Number(Number(progress * 100).toFixed(2));
   }, [progress]);
 
   return (

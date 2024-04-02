@@ -19,6 +19,7 @@ const Home = () => {
 
   const worker = useMemo(async () => {
     return await createWorker("chi_sim", 1, {
+      workerPath: "./node_modules/tesseract.js/src/worker-script/node/index.js",
       logger: (m) => {
         console.log(m);
         setProgress(m.progress);

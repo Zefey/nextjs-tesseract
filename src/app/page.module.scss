@@ -29,6 +29,7 @@
 }
 
 .title {
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -37,6 +38,7 @@
 }
 
 .result {
+  width: 100%;
   padding: 20px;
   outline-offset: -6px;
   box-sizing: border-box;

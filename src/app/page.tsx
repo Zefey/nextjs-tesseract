@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Upload, Image, Progress } from "antd";
 import { UploadOutlined, RedoOutlined, CopyOutlined } from "@ant-design/icons";
 import { createWorker } from "tesseract.js";
@@ -8,40 +8,49 @@ import { createWorker } from "tesseract.js";
 import styles from "./page.module.scss";
 
 const Home = () => {
+  const worker = useRef<Promise<Tesseract.Worker>>()
   const [sourceImg, setSourceImg] = useState("");
   const [progress, setProgress] = useState(0);
   const [ocr, setOcr] = useState("");
   const [convertLoading, setConvertLoading] = useState(false);
 
-  useEffect(() => {
-    document.title = "nextjs-tesseract";
-  }, []);
+  const initWorker = useCallback(() => {
+    // 本地安装
+    //  https://github.com/naptha/tesseract.js/blob/master/docs/local-installation.md
+    // workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js",
+    // langPath: "https://tessdata.projectnaptha.com/4.0.0",
+    // corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0",
 
-  const worker = useMemo(async () => {
-    return await createWorker("chi_sim", 1, {
-      // 本地安装
-      //  https://github.com/naptha/tesseract.js/blob/master/docs/local-installation.md
-      workerPath:
-        "https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js",
-      langPath: "https://tessdata.projectnaptha.com/4.0.0",
-      corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0",
+    worker.current = createWorker("chi_sim", 1, {
+      workerPath: "/tesseract/tesseract.js/dist/worker.min.js",
+      corePath: "/tesseract/tesseract.js-core/tesseract-core.wasm.js",
+      langPath: "/tesseract/tesseract-lang",
       logger: (m) => {
         console.log(m);
         setProgress(m.progress);
       },
-    });
+    }) as any;
+  }, [])
+
+  useEffect(() => {
+    document.title = "nextjs-tesseract";
+    initWorker()
   }, []);
 
   const handleOCR = async () => {
     setConvertLoading(true);
     try {
-      const {
-        data: { text },
-      } = await (await worker).recognize(sourceImg);
-      setOcr(text);
+      const workerInst = await worker.current
+      if (workerInst) {
+        const {
+          data: { text },
+        } = await workerInst.recognize(sourceImg);
+        setOcr(text);
+      }
     } finally {
       setConvertLoading(false);
     }
+
   };
 
   const handleImage = (file: File) => {
@@ -67,7 +76,7 @@ const Home = () => {
     <div className={styles.container}>
       <div className={styles.btnGroup}>
         <Upload beforeUpload={handleImage} showUploadList={false} maxCount={1}>
-          <Button icon={<UploadOutlined />}>Select Image</Button>
+          <Button icon={<UploadOutlined />}>选择图片</Button>
         </Upload>
         <Button
           icon={<RedoOutlined />}
@@ -75,13 +84,13 @@ const Home = () => {
           disabled={!sourceImg}
           onClick={handleOCR}
         >
-          Convert
+          OCR识别
         </Button>
       </div>
       {sourceImg ? (
         <Image src={sourceImg} className={styles.img} alt="" />
       ) : (
-        <div className={styles.tips}>Please Select an Image</div>
+        <div className={styles.tips}>请选择图片..</div>
       )}
       {convertLoading ? (
         <Progress
@@ -90,15 +99,15 @@ const Home = () => {
           strokeColor={{ from: "#108ee9", to: "#87d068" }}
         />
       ) : ocr ? (
-        <div>
+        <>
           <div className={styles.title}>
-            Output
+            输出
             <Button icon={<CopyOutlined />} onClick={handleCopy}>
-              Copy
+              复制
             </Button>
           </div>
           <div className={styles.result}>{ocr}</div>
-        </div>
+        </>
       ) : null}
     </div>
   );
